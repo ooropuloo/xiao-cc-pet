@@ -125,6 +125,7 @@ git config core.hooksPath .githooks
 
 做這顆小圓盤的人也在經營「MF AI 開搞」，分享用 AI 做影片、音樂和小玩意的過程：
 
+- YouTube 頻道：[MF AI 開搞](https://www.youtube.com/channel/UCGDR4quVMcfCoUJmNFNRGuA/)
 - Facebook 粉絲專頁：[MF AI 開搞](https://www.facebook.com/61594628407625/)
 
 ## 致謝
