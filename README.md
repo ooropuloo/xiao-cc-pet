@@ -121,12 +121,16 @@ Claude 頁（正式程式離線渲染，資料是假的）：
 git config core.hooksPath .githooks
 ```
 
-## 作者的其他作品
+## 來 MF AI 開搞玩！
 
-做這顆小圓盤的人也在經營「MF AI 開搞」，分享用 AI 做影片、音樂和小玩意的過程：
+這顆小圓盤就是我們「MF AI 開搞」做的 🙌
+我們每天都在用 AI 開搞各種東西：做影片、寫歌拍 MV、還有像這顆扭蛋一樣的桌上小玩具。
+做的過程、踩過的坑、新玩法，都會先分享在粉絲團和頻道，歡迎來追蹤、留言跟我們一起玩！
 
-- YouTube 頻道：[MF AI 開搞](https://www.youtube.com/channel/UCGDR4quVMcfCoUJmNFNRGuA/)
-- Facebook 粉絲專頁：[MF AI 開搞](https://www.facebook.com/61594628407625/)
+- ▶️ YouTube：[MF AI 開搞](https://www.youtube.com/channel/UCGDR4quVMcfCoUJmNFNRGuA/)
+- 👍 Facebook 粉絲團：[MF AI 開搞](https://www.facebook.com/61594628407625/)
+
+有問題、想要我們做什麼，或做出了自己的版本，都歡迎到粉絲團告訴我們！
 
 ## 致謝
 
