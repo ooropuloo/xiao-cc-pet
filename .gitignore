@@ -1,0 +1,28 @@
+# secrets: never commit
+secrets.h
+.env
+*.env
+.claude/settings.local.json
+
+# build output and firmware images (they embed the secrets)
+build/
+build-*/
+*.bin
+*.elf
+*.map
+
+# toolchain
+tools/arduino-cli.exe
+arduino/
+
+# runtime records
+*.log
+*.log.*
+*.csv
+__pycache__/
+evolve/logs/
+evolve/proposals/
+evolve/backups/
+evolve/history.json
+host/desktop.json
+backups/

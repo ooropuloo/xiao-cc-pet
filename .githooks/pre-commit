@@ -1,0 +1,3 @@
+#!/bin/sh
+# Block commits that contain a local secret value (see tools/check_secrets.py).
+exec python "$(git rev-parse --show-toplevel)/tools/check_secrets.py"
