@@ -1,5 +1,7 @@
 # xiao-cc-pet：XIAO 圓形小螢幕上的 Claude Code 小夥伴
 
+**繁體中文** | [English](README.en.md)
+
 XIAO ESP32-C3 ＋ Seeed Round Display（1.28 吋圓形觸控）做成的桌上小裝置，裝在扭蛋殼裡。
 電腦端（Windows）用 Python 畫畫面、推給板子；板子負責觸控、Wi-Fi、開門和幾個自己畫的頁面。
 最特別的是它每天清晨會**自己提一版改版**，你在 Telegram 回一個字就套用。
