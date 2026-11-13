@@ -7,6 +7,15 @@ XIAO ESP32-C3 ＋ Seeed Round Display（1.28 吋圓形觸控）做成的桌上�
 > 這是個人專案的公開整理版：機密（Wi-Fi 密碼、OTA 密碼、開門連結、Telegram token）都不在 repo 裡，
 > 自己準備一份 `secrets.h` 和 `.env` 才能跑，見「[要自己準備的東西](#要自己準備的東西)」。
 
+## 實機照片
+
+| | |
+|---|---|
+| ![裝在扭蛋殼裡的小圓盤，Claude 頁的小橘人待命中](docs/images/photo_claude.jpg) | ![扭蛋小圓盤的播放器頁](docs/images/photo_player.jpg) |
+| 裝在扭蛋殼裡，Claude 頁的小橘人在待命 | 播放器頁：電腦正在放的歌 |
+| ![還沒裝殼的圓形螢幕，手指在點播放器](docs/images/photo_bare.jpg) | ![Wi-Fi 頁顯示已連線與訊號強度](docs/images/photo_wifi.jpg) |
+| 還沒裝殼的樣子，直接用手指操作 | Wi-Fi 頁：轉外圈挑網路，顯示訊號強度 |
+
 ## 功能
 
 | 功能 | 說明 |
@@ -23,7 +32,7 @@ XIAO ESP32-C3 ＋ Seeed Round Display（1.28 吋圓形觸控）做成的桌上�
 
 ## 畫面
 
-Claude 頁（正式程式離線渲染，資料是假的）：
+Claude 頁（渲染圖）：
 
 ![Claude 頁](docs/images/claude.png)
 
