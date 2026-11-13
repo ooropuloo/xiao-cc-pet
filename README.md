@@ -39,6 +39,11 @@ Claude 頁（正式程式離線渲染，資料是假的）：
 
 ## 架構
 
+![架構圖：Windows 電腦的 host/player.py 透過 Wi-Fi TCP 5800 把 JPEG 畫面送到 XIAO ESP32-C3 圓形螢幕，觸控事件傳回；evolve/ 每日自我進化走排程器、Claude Code、Telegram](docs/images/architecture.png)
+
+<details>
+<summary>文字版架構</summary>
+
 ```
              Wi-Fi TCP 5800（JPEG 畫面 ↓、觸控事件 ↑）
  Windows 電腦 ──────────────────────────────── XIAO ESP32-C3 ＋ 圓形螢幕
@@ -49,6 +54,8 @@ Claude 頁（正式程式離線渲染，資料是假的）：
    └ buddy：兩塊板子的距離互動                      └ OTA（/update）、Wi-Fi 看門狗
  evolve/  每日自我進化（排程器 → Claude Code -p → Telegram）
 ```
+
+</details>
 
 - Claude 頁的狀態來自 [ccpet](#相依)（另一個專案，port 3378），它讀 `~/.claude/projects` 的 JSONL。
 - 板子用 mDNS `xiao-player.local`，`player.py` 會自己找到它。
