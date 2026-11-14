@@ -66,8 +66,10 @@ Door page:
 
 </details>
 
-- The Claude page state comes from [ccpet](#dependencies) (a separate project, port 3378), which reads the JSONL under `~/.claude/projects`.
-- The board advertises mDNS `xiao-player.local`; `player.py` finds it by itself.
+- The Claude page state comes from [ccpet](https://github.com/ooropuloo/ccpet) (a separate project, port 3378), which reads the JSONL under `~/.claude/projects`.
+- The PC connects to the board, not the other way round: once on Wi-Fi the board listens on TCP 5800 and advertises mDNS `xiao-player.local`;
+  whichever PC runs `start-xiao.bat` has its `player.py` find the board and connect. Two PCs running at once fight over it; the latest connection wins.
+- No Wi-Fi (no antenna, or none of its saved networks around) works too: `start-xiao-usb.bat` runs the same protocol over the USB cable.
 
 ## How the daily self-evolution talks to Claude Code
 
@@ -113,20 +115,35 @@ it simply exits and the terminal asks you as usual, so Claude Code never hangs.
 | `firmware/ytplayer/secrets.h` | Wi-Fi SSID / password, door URL, OTA user / password | `secrets.h.example` |
 | Telegram `.env` | `TELEGRAM_BOT_TOKEN=`, `TELEGRAM_CHAT_ID=` | point the `XIAO_TG_ENV` environment variable at it |
 
-Other machine-specific paths can be changed with environment variables: `XIAO_CLAUDE` (claude.exe), `XIAO_BASH` (Git Bash).
+Other machine-specific paths can be changed with environment variables: `XIAO_CLAUDE` (claude.exe), `XIAO_BASH` (Git Bash), `XIAO_CCPET` (the ccpet folder, default `D:\git\ccpet`).
 
 ## Install
 
 1. Install [arduino-cli](https://arduino.github.io/arduino-cli/) as `tools/arduino-cli.exe`; add esp32 core 3.3.x and the libraries `GFX Library for Arduino`, `TJpg_Decoder`, `U8g2` (`qrcode.h` comes with the esp32 core).
 2. First flash over USB: `sh flash.sh COM13`; after that over Wi-Fi: `sh flash.sh ota`.
    The partition scheme must be `min_spiffs` (the firmware is > 1.2 MB; two 1.9 MB slots are needed for OTA).
-3. PC side uses [uv](https://docs.astral.sh/uv/): `start-xiao.bat` starts `player.py` (and ccpet) in the background; `stop-xiao.bat` stops them.
-4. Daily evolution: run `evolve/register-tasks.ps1` in PowerShell.
+3. Install ccpet (for the Claude page): `git clone https://github.com/ooropuloo/ccpet D:\git\ccpet`, or put it elsewhere and set `XIAO_CCPET`.
+   It only needs Node 18+; the server needs no `npm install` (that is only for ccpet's own desktop pet).
+4. PC side uses [uv](https://docs.astral.sh/uv/): `start-xiao.bat` starts `player.py` (and ccpet) in the background; `stop-xiao.bat` stops them.
+   When the board can't get on Wi-Fi, use `start-xiao-usb.bat` instead: it goes over the USB cable, finds the COM port, resets the board
+   into its firmware, and reconnects by itself when USB is unplugged and plugged back in.
+   It needs [esptool](https://github.com/espressif/esptool) (`pip install esptool`), or falls back to `uv tool run esptool`.
+5. Daily evolution: run `evolve/register-tasks.ps1` in PowerShell.
 
 ## Dependencies
 
-- **ccpet**: a small service that reads Claude Code session state (port 3378); the Claude page needs it, everything else works without it.
+- **[ccpet](https://github.com/ooropuloo/ccpet)**: a small service that reads Claude Code session state (port 3378); the Claude page needs it, everything else works without it.
 - ESP-NOW play needs a second ESP32 running `peer_link.h` (on the same Wi-Fi channel).
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Black, not even the backlight | The **power slide switch** on the back of the Round Display is OFF. Screen, backlight and touch all run on the 3.3 V the board's own buck converter makes, so OFF cuts all of them. From v1.1 there is also a 2-bit DIP switch (KE) next to it; it only connects D6 / A0 to the backlight and battery readout, it is not the power switch | Slide the switch to ON |
+| Backlight on, but black | The display got power after the XIAO booted (XIAO plugged into USB before it was seated on the display, or the switch flipped after boot). The panel is reset only by an RC at power-up, and the firmware sets it up only once at boot | Seat the display and switch it ON first, plug USB in last; if it is already black, unplug and replug |
+| Black after plugging USB in, nothing on the COM port | The board is sitting in ROM download mode (boot log `wait usb download`); on Windows this often happens after a DTR / RTS reset | `esptool --port COMx --before no-reset --after watchdog-reset chip-id`; `start-xiao-usb.bat` does this by itself |
+| Stuck on Waiting PC... | `player.py` on the PC isn't running or hasn't connected yet | Run `start-xiao.bat` (Wi-Fi) or `start-xiao-usb.bat` (USB) |
+| Restarts itself every few minutes | It can't reach any saved Wi-Fi network and the Wi-Fi watchdog keeps retrying | Attach the antenna, add the local 2.4 GHz network on the Wi-Fi page, or use USB mode for now |
 
 ## Secret check
 

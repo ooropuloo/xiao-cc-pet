@@ -68,8 +68,10 @@ Claude 頁（渲染圖）：
 
 </details>
 
-- Claude 頁的狀態來自 [ccpet](#相依)（另一個專案，port 3378），它讀 `~/.claude/projects` 的 JSONL。
-- 板子用 mDNS `xiao-player.local`，`player.py` 會自己找到它。
+- Claude 頁的狀態來自 [ccpet](https://github.com/ooropuloo/ccpet)（另一個專案，port 3378），它讀 `~/.claude/projects` 的 JSONL。
+- 是電腦去連板子，不是板子找電腦：板子連上 Wi-Fi 後開 TCP 5800、用 mDNS 廣播 `xiao-player.local`，
+  哪台電腦跑 `start-xiao.bat`，那台的 `player.py` 就會找到它連上去。同時兩台在跑會互搶，最後連上的贏。
+- 沒有 Wi-Fi（沒接天線、不在存過的網路）也能用：`start-xiao-usb.bat` 改走 USB 線，同一套協定。
 
 ## 每日自我進化是怎麼接上 Claude Code 的
 
@@ -115,20 +117,34 @@ Claude 頁（渲染圖）：
 | `firmware/ytplayer/secrets.h` | Wi-Fi SSID／密碼、開門網址、OTA 帳密 | `secrets.h.example` |
 | Telegram `.env` | `TELEGRAM_BOT_TOKEN=`、`TELEGRAM_CHAT_ID=` | 用環境變數 `XIAO_TG_ENV` 指到它 |
 
-其他機器相依的路徑都能用環境變數改：`XIAO_CLAUDE`（claude.exe）、`XIAO_BASH`（Git Bash）。
+其他機器相依的路徑都能用環境變數改：`XIAO_CLAUDE`（claude.exe）、`XIAO_BASH`（Git Bash）、`XIAO_CCPET`（ccpet 資料夾，預設 `D:\git\ccpet`）。
 
 ## 安裝
 
 1. 安裝 [arduino-cli](https://arduino.github.io/arduino-cli/)，放到 `tools/arduino-cli.exe`；裝 esp32 core 3.3.x 和函式庫 `GFX Library for Arduino`、`TJpg_Decoder`、`U8g2`（`qrcode.h` 用 esp32 core 內建的）。
 2. 第一次用 USB 燒：`sh flash.sh COM13`；之後走 Wi-Fi：`sh flash.sh ota`。
    分割表一定要 `min_spiffs`（韌體 > 1.2 MB，兩個 1.9 MB 槽才能 OTA）。
-3. 電腦端用 [uv](https://docs.astral.sh/uv/)：`start-xiao.bat` 會在背景啟動 `player.py`（和 ccpet）；`stop-xiao.bat` 停止。
-4. 每日進化：PowerShell 跑 `evolve/register-tasks.ps1`。
+3. 裝 ccpet（Claude 頁要用）：`git clone https://github.com/ooropuloo/ccpet D:\git\ccpet`，放別的地方就設 `XIAO_CCPET`。
+   只要 Node 18 以上，server 不用 `npm install`（那是 ccpet 自己的桌寵才要）。
+4. 電腦端用 [uv](https://docs.astral.sh/uv/)：`start-xiao.bat` 會在背景啟動 `player.py`（和 ccpet）；`stop-xiao.bat` 停止。
+   板子連不上 Wi-Fi 時改用 `start-xiao-usb.bat`：走 USB 線，自己找 COM port、把板子重開進韌體，拔插 USB 會自己接回來。
+   要先裝 [esptool](https://github.com/espressif/esptool)（`pip install esptool`），沒裝會用 `uv tool run esptool`。
+5. 每日進化：PowerShell 跑 `evolve/register-tasks.ps1`。
 
 ## 相依
 
-- **ccpet**：讀 Claude Code session 狀態的小服務（port 3378），Claude 頁需要它；沒有它其他頁照常運作。
+- **[ccpet](https://github.com/ooropuloo/ccpet)**：讀 Claude Code session 狀態的小服務（port 3378），Claude 頁需要它；沒有它其他頁照常運作。
 - ESP-NOW 互動要另一塊跑 `peer_link.h` 的 ESP32（同一個 Wi-Fi 頻道）。
+
+## 疑難排解
+
+| 狀況 | 原因 | 怎麼辦 |
+|---|---|---|
+| 全黑，連背光都沒亮 | 圓形螢幕背面的**電源滑動開關**在 OFF。螢幕、背光、觸控都吃板上降壓出來的 3.3 V，開關一關全部沒電。v1.1 起旁邊多一個兩位撥碼開關（KE），它只管 D6／A0 要不要接到背光和電池偵測，不是電源開關 | 滑動開關撥到 ON |
+| 有背光但全黑 | 螢幕比 XIAO 晚通電（XIAO 先插 USB 才裝上螢幕，或開機後才撥開關）。面板只在上電時靠 RC 重置一次，韌體也只在開機時設定它一次 | 先裝好螢幕、開關撥 ON，最後才插 USB；已經黑了就拔插一次 |
+| 插上 USB 全黑、COM port 沒任何輸出 | 板子停在 ROM 下載模式（開機 log 是 `wait usb download`），Windows 上被 DTR／RTS 重置後常會這樣 | `esptool --port COMx --before no-reset --after watchdog-reset chip-id`；`start-xiao-usb.bat` 會自動做 |
+| 一直停在 Waiting PC... | 電腦端 `player.py` 沒在跑，或還沒連上 | 跑 `start-xiao.bat`（Wi-Fi）或 `start-xiao-usb.bat`（USB） |
+| 每隔幾分鐘自己重開 | 連不上存過的 Wi-Fi，Wi-Fi 看門狗在重試 | 接天線、在 Wi-Fi 頁新增這裡的 2.4 GHz 網路，或先用 USB 模式 |
 
 ## 機密檢查
 
