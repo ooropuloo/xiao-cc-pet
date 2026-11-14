@@ -141,7 +141,7 @@ Claude 頁（渲染圖）：
 | 狀況 | 原因 | 怎麼辦 |
 |---|---|---|
 | 全黑，連背光都沒亮 | 圓形螢幕背面的**電源滑動開關**在 OFF。螢幕、背光、觸控都吃板上降壓出來的 3.3 V，開關一關全部沒電。v1.1 起旁邊多一個兩位撥碼開關（KE），它只管 D6／A0 要不要接到背光和電池偵測，不是電源開關 | 滑動開關撥到 ON |
-| 有背光但全黑 | 螢幕比 XIAO 晚通電（XIAO 先插 USB 才裝上螢幕，或開機後才撥開關）。面板只在上電時靠 RC 重置一次，韌體也只在開機時設定它一次 | 先裝好螢幕、開關撥 ON，最後才插 USB；已經黑了就拔插一次 |
+| 有背光但全黑 | 螢幕比 XIAO 晚通電（XIAO 先插 USB 才裝上螢幕，或開機後才撥開關）。面板只在上電時靠 RC 重置一次，舊韌體也只在開機時設定它一次 | 現在的韌體會盯著觸控晶片的 INT 腳，螢幕一通電就自己重新設定面板，一兩秒內恢復；還是舊韌體就拔插一次 |
 | 插上 USB 全黑、COM port 沒任何輸出 | 板子停在 ROM 下載模式（開機 log 是 `wait usb download`），Windows 上被 DTR／RTS 重置後常會這樣 | `esptool --port COMx --before no-reset --after watchdog-reset chip-id`；`start-xiao-usb.bat` 會自動做 |
 | 一直停在 Waiting PC... | 電腦端 `player.py` 沒在跑，或還沒連上 | 跑 `start-xiao.bat`（Wi-Fi）或 `start-xiao-usb.bat`（USB） |
 | 每隔幾分鐘自己重開 | 連不上存過的 Wi-Fi，Wi-Fi 看門狗在重試 | 接天線、在 Wi-Fi 頁新增這裡的 2.4 GHz 網路，或先用 USB 模式 |

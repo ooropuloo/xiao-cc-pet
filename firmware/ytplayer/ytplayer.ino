@@ -559,6 +559,47 @@ void showPage(int p) {
   else drawSys();
 }
 
+// ---------- display power watch ----------
+// The Round Display runs the LCD, its backlight and the touch chip off its own buck converter behind
+// its power slide switch, and the panel's reset is only an RC on that rail. setup() sets the panel up
+// once, so a display that gets power after boot (switch flipped later, XIAO on USB before it was
+// seated) lights its backlight over a panel nobody set up: black until a restart. The touch chip sits
+// on the same rail and drives its INT line high while it is powered and idle (it doesn't answer I2C
+// then, so it can't be pinged): with the pin pulled down for a moment, INT reads high only when the
+// display has power. When it comes up, set the panel up again and redraw. INT pulses low while a
+// finger is down, so touches are skipped and a miss has to repeat before it counts.
+#define PANEL_CHECK_MS 1000
+bool panelUp = false;
+int panelMisses = 0;
+unsigned long panelCheckMs = 0;
+
+bool displayPowered() {
+  if (touching || (lastTouchMs && millis() - lastTouchMs < 1000)) return panelUp;
+  pinMode(TOUCH_INT, INPUT_PULLDOWN);
+  delayMicroseconds(200);
+  bool up = digitalRead(TOUCH_INT) == HIGH;
+  pinMode(TOUCH_INT, INPUT_PULLUP);
+  return up;
+}
+
+void panelTick() {
+  if (millis() - panelCheckMs < PANEL_CHECK_MS) return;
+  panelCheckMs = millis();
+  bool ack = displayPowered();
+  if (!ack) {
+    if (++panelMisses >= 3) panelUp = false;
+    return;
+  }
+  panelMisses = 0;
+  if (panelUp) return;
+  panelUp = true;
+  delay(150);  // let the rail and the panel's RC reset settle
+  gfx->begin(40000000);
+  showPage(page);
+  emit("PANEL display powered up, panel set up again\n");
+  emit("HELLO\n");  // the PC pushes a fresh frame for the page
+}
+
 void onTouchDown(int x, int y) {
   downX = lastX = x; downY = lastY = y;
   downMs = millis();
@@ -662,6 +703,7 @@ void setup() {
   pinMode(TOUCH_INT, INPUT_PULLUP);
   Wire.begin();
   gfx->begin(40000000);
+  panelUp = displayPowered();  // set up just now; panelTick redoes it if the display powers up later
 
   TJpgDec.setJpgScale(1);
   TJpgDec.setSwapBytes(false);
@@ -704,6 +746,7 @@ void loop() {
   }
 
   if (page == 1) doorTick();
+  panelTick();
   sysTick();
   tempTick();
   wifiTick();
