@@ -11,6 +11,7 @@ import colorsys
 import io
 import logging
 import math
+import os
 import socket
 import struct
 import unicodedata
@@ -151,12 +152,32 @@ class SerialDevice(Device):
         self.ser.timeout = 0.1
         self.ser.open()
         self.name = port
+        self.last_rx = time.monotonic()
         threading.Thread(target=self._reader, daemon=True).start()
+        threading.Thread(target=self._watchdog, daemon=True).start()
 
     def _reader(self):
         buf = b""
         while True:
-            buf = self._feed(buf + self.ser.read(256))
+            try:
+                data = self.ser.read(256)
+            except serial.SerialException as e:
+                # USB unplugged: the port never comes back on this handle, so quit and let
+                # scripts/run-player-usb.ps1 find the board again and start a fresh player
+                log.info(f"serial link lost ({e}), exiting")
+                os._exit(3)
+            if data:
+                self.last_rx = time.monotonic()
+            buf = self._feed(buf + data)
+
+    def _watchdog(self):
+        # the firmware sends TEMP every 5 s; silence means it isn't running (e.g. it powered up
+        # in ROM download mode), so quit and let run-player-usb.ps1 reset the board
+        while True:
+            time.sleep(1)
+            if time.monotonic() - self.last_rx > 15:
+                log.info("no data from the board for 15 s, exiting")
+                os._exit(4)
 
     def send_jpeg(self, data, tag=b"G"):
         self.ser.write(self.frame(data, tag))

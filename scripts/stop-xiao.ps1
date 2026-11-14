@@ -17,5 +17,7 @@ function Stop-PortOwner([int]$port, [string]$mustMatch, [string]$label) {
 # stop the restart loop first, or it brings the player straight back
 $loops = Get-CimInstance Win32_Process -Filter "Name='cmd.exe'" | Where-Object { $_.CommandLine -match 'run-player\.bat' }
 foreach ($l in $loops) { Stop-Process -Id $l.ProcessId -Force -ErrorAction SilentlyContinue; "stopped restart loop (pid $($l.ProcessId))" }
+$usbLoops = Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" | Where-Object { $_.CommandLine -match 'run-player-usb\.ps1' }
+foreach ($l in $usbLoops) { Stop-Process -Id $l.ProcessId -Force -ErrorAction SilentlyContinue; "stopped USB restart loop (pid $($l.ProcessId))" }
 Stop-PortOwner 5810 'player\.py' 'player'
 if (-not $KeepCcpet) { Stop-PortOwner 3378 'server\.js' 'ccpet server' }
